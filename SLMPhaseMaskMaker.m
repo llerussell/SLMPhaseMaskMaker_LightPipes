@@ -11,13 +11,15 @@ if nargin == 0  % open file dialog if no filepath provided
     filepath = [PathName filesep FileName];
     cd(PathName)
     targetsImg = imread(filepath);
-    choice = questdlg('Transform points?', 'User input required', 'Yes','No', 'Yes');
+    transform_choice = questdlg('Transform points?', 'User input required', 'Yes','No', 'Yes');
 elseif ischar(varargin{1})  % filepath provided
     filepath = varargin{1};
     targetsImg = imread(filepath);
+    transform_choice = 'Yes';
 else  % assume data array provided first, and savename second
     targetsImg = varargin{1};
     filepath = varargin{2};
+    transform_choice = 'Yes';
 end
 [~,filename] = fileparts(filepath);
 
@@ -28,7 +30,7 @@ end
 load('20150421_tform_2P_SLM')
 
 % Convert target *coordinates* directly from 2P to SLM space
-switch choice
+switch transform_choice
     case 'Yes'
         [u,v] = transformPointsForward(tform,x,y);
         u     = round(u);
