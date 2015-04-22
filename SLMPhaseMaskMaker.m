@@ -1,5 +1,5 @@
 function SLMPhaseMaskMaker(varargin)
-% Adam Packer December 2 2013, Lloyd Russell April 2014, Jan 2015
+% Adam Packer, Lloyd Russell 2012-2015
 % varargin can be:
 %   none, an open file dialog box will open
 %   path to image file on disk
@@ -8,20 +8,20 @@ function SLMPhaseMaskMaker(varargin)
 % Load targets image
 if nargin == 0  % open file dialog if no filepath provided
     [FileName,PathName] = uigetfile('*.tif*','Select the targets file');
-    filepath = [PathName filesep FileName];
+    filePath = [PathName filesep FileName];
     cd(PathName)
-    targetsImg = imread(filepath);
-    transform_choice = questdlg('Transform points?', 'User input required', 'Yes','No', 'Yes');
+    targetsImg = imread(filePath);
+    transformChoice = questdlg('Transform points?', 'User input required', 'Yes','No', 'Yes');
 elseif ischar(varargin{1})  % filepath provided
-    filepath = varargin{1};
-    targetsImg = imread(filepath);
-    transform_choice = 'Yes';
+    filePath = varargin{1};
+    targetsImg = imread(filePath);
+    transformChoice = 'Yes';
 else  % assume data array provided first, and savename second
     targetsImg = varargin{1};
-    filepath = varargin{2};
-    transform_choice = 'Yes';
+    filePath = varargin{2};
+    transformChoice = 'Yes';
 end
-[~,filename] = fileparts(filepath);
+[~,fileName] = fileparts(filePath);
 
 % Find target coordinates
 [y,x,~] = find(targetsImg);
@@ -30,7 +30,7 @@ end
 load('20150421_tform_2P_SLM')
 
 % Convert target *coordinates* directly from 2P to SLM space
-switch transform_choice
+switch transformChoice
     case 'Yes'
         [u,v] = transformPointsForward(tform,x,y);
         u     = round(u);
@@ -44,7 +44,7 @@ SLMtargets = uint8(zeros(512,512));
 for i = 1:length(u)
     SLMtargets(v(i),u(i)) = 255;
 end
-imwrite(SLMtargets, [filename '_Transformed.tif']);
+imwrite(SLMtargets, [fileName '_Transformed.tif']);
 
 % Weight the target pixel intensity by distance from zero order
 slope                = 75/183;
@@ -66,7 +66,7 @@ SLMtargets = uint8(zeros(512,512));
 for i = 1:length(u)
     SLMtargets(v(i),u(i)) = p(i);
 end
-imwrite(SLMtargets, [filename '_TransformedWeighted.tif']);
+imwrite(SLMtargets, [fileName '_TransformedWeighted.tif']);
 
 % Computer generated hologram using the Gerchberg-Saxton algorithm
 % Dr F.A. van Goor, University of Twente. April 2010
@@ -103,4 +103,4 @@ Phase16     = PhaseZeroed*(65535/max(max(PhaseZeroed)));
 phaseMask16 = uint16(Phase16);
 
 % Save
-imwrite(phaseMask16, [filename '_LPphase.tiff']);
+imwrite(phaseMask16, [fileName '_LPphase.tiff']);
